@@ -7,7 +7,7 @@ from sklearn.model_selection import train_test_split
 
 # Load the saved model
 try:
-    model = pickle.load(open('model_klasifikasi', 'rb'))
+    model = pickle.load(open('model_klasifikasi.knn', 'rb'))
     scaler = StandardScaler()
 except:
     st.error("Model tidak ditemukan. Pastikan file 'model_klasifikasi' ada di direktori yang sama.")
