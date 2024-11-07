@@ -5,7 +5,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import KNeighborsClassifierr
 from sklearn.model_selection import train_test_split
 
-!wget -q -O- ipv4.icanhazip.com
+
 
 st.title("Aplikasi Prediksi Stunting Anak")
 
