@@ -35,7 +35,7 @@ with col1:
 
 # Load the model and scaler
 try:
-    with open('model_klasifikasi', 'rb') as file:
+    with open('model_klasifikasi.knn', 'rb') as file:
         model = pickle.load(file)
     
     # Load the dataset for scaling reference
