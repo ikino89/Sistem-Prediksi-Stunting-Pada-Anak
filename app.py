@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import pickle
 import numpy as np
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
 
 # Konfigurasi halaman
@@ -16,16 +15,13 @@ st.set_page_config(
 st.title("Aplikasi Prediksi Stunting Anak")
 st.write("Aplikasi ini membantu memprediksi status stunting pada anak berdasarkan data yang dimasukkan.")
 
-# Load model dan scaler
+# Load model
 try:
     with open('model_klasifikasi.pkl', 'rb') as file:
         model = pickle.load(file)
 except FileNotFoundError:
     st.error("Model belum tersedia. Pastikan file model_klasifikasi.pkl ada di direktori yang sama.")
     st.stop()
-
-# Initialize scaler
-scaler = StandardScaler()
 
 # Fungsi untuk input data
 def user_input_features():
@@ -44,35 +40,33 @@ def user_input_features():
     # Konversi input ke format yang sesuai dengan model
     jk_encoded = 1 if Jenis_Kelamin == 'Laki-laki' else 2
     
-    # Buat dictionary data dengan urutan yang sesuai dengan model training
+    # Buat dictionary data dengan urutan yang sama seperti saat training
     data = {
-        'Umur (bulan)': Umur_bulan,
-        'Tinggi Badan (cm)': Tinggi_Badan_cm,
-        'Jenis Kelamin': jk_encoded
+        'Umur (bulan)': [Umur_bulan],
+        'Tinggi Badan (cm)': [Tinggi_Badan_cm],
+        'Jenis Kelamin': [jk_encoded]
     }
     
-    return pd.DataFrame(data, index=[0])
+    return pd.DataFrame(data)
 
 # Main
 def main():
     # Input data
     st.sidebar.header('Input Data Anak')
-    df_input = user_input_features()
+    input_df = user_input_features()
     
     # Tampilkan data input
     st.subheader('Data yang Dimasukkan:')
-    
-    # Konversi kembali nilai-nilai untuk ditampilkan
-    display_df = df_input.copy()
+    display_df = input_df.copy()
     display_df['Jenis Kelamin'] = display_df['Jenis Kelamin'].map({1: 'Laki-laki', 2: 'Perempuan'})
     st.write(display_df)
     
     # Tombol untuk prediksi
     if st.button('Prediksi Status Stunting'):
         try:
-            # Standardisasi input menggunakan StandardScaler
-            # Fit scaler dengan data input untuk mendapatkan statistik dasar
-            input_scaled = scaler.fit_transform(df_input)
+            # Standardisasi input seperti saat training
+            scaler = StandardScaler()
+            input_scaled = scaler.fit_transform(input_df)
             
             # Prediksi
             prediction = model.predict(input_scaled)
@@ -91,7 +85,7 @@ def main():
             status = status_map[prediction[0]]
             st.markdown(f"### Status Stunting: **{status}**")
             
-            # Tampilkan interpretasi
+            # Tambahkan interpretasi hasil
             if status == 'Severely Stunted':
                 st.warning("Anak tergolong sangat pendek untuk usianya. Segera konsultasikan dengan tenaga kesehatan.")
             elif status == 'Stunted':
@@ -107,7 +101,6 @@ def main():
                 prediction_proba,
                 columns=['Severely Stunted', 'Stunted', 'Normal', 'Tinggi']
             )
-            
             # Format probabilitas sebagai persentase
             prob_df_display = prob_df.applymap(lambda x: f"{x*100:.2f}%")
             st.write(prob_df_display)
@@ -128,7 +121,7 @@ def main():
         - **Tinggi**: Tinggi badan di atas rata-rata untuk usia anak
         
         ### Catatan Penting:
-        - Aplikasi ini menggunakan model machine learning yang telah dilatih dengan data stunting anak
+        - Aplikasi ini menggunakan model KNN (K-Nearest Neighbors) yang telah dilatih dengan data stunting anak
         - Hasil prediksi bersifat estimasi dan WAJIB dikonsultasikan dengan tenaga kesehatan profesional
         - Faktor-faktor lain seperti genetik, nutrisi, dan riwayat kesehatan juga mempengaruhi pertumbuhan anak
         """)
